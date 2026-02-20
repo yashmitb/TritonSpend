@@ -5,12 +5,10 @@ import { useEffect, useState, useCallback } from "react";
 import { BACKEND_PORT } from "@env";
 import { useAuth } from "@/context/authContext";
 import CustomPieChart from "@/components/Graphs/PieChart";
-import BarChart from "@/components/Graphs/BarChart";
 import { useFocusEffect } from "@react-navigation/native";
 /* 
   this function is the structure for the home screen which includes a graph, option to add transaction, and recent transaction history.
 */
-
 interface Category {
   id: number;
   category_name: string;
@@ -18,44 +16,10 @@ interface Category {
   max_category_budget: string;
   user_id: number;
 }
-
-interface MonthlyRow {
-  month: string;
-  total: string;
-}
-
-interface MonthlyData {
-  name: string; // month
-  value: number; // total as number
-}
-
 export default function Home() {
   //place holder array for us to map through
   //passing it through props because I think it will be easier for us to call the API endpoints in the page and pass it through props
   const [ThreeTransactions, setThreeTransactions] = useState([]);
-  const [monthlyData, setMonthlyData] = useState<MonthlyData[]>([]);
-  const [monthlyData1, setMonthlyData1] = useState<MonthlyData[]>([]);
-  const testData = [
-    { month: "2024-01", total: 67.0 },
-    { month: "2024-02", total: 750.0 },
-    { month: "2024-03", total: 620.0 },
-    { month: "2024-04", total: 810.0 },
-    { month: "2024-05", total: 430.0 },
-    { month: "2024-06", total: 970.0 },
-  ];
-
-  useEffect(() => {
-    // Convert testData to BarChart format: name, value, color
-    const formatted = testData.map((item) => ({
-      name: item.month,
-      value: item.total,
-      color: "", // leave empty to auto-assign pastel color
-    }));
-
-    setMonthlyData1(formatted);
-    setTotal(testData.reduce((sum, item) => sum + item.total, 0));
-  }, []);
-
   const [updateRecent, setUpdateRecent] = useState(false);
   const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -105,21 +69,6 @@ export default function Home() {
           console.error("API Error:", error);
         });
 
-      fetch(`http://localhost:${BACKEND_PORT}/transactions/monthly/${userId}`)
-        .then((res) => res.json())
-        .then((data: MonthlyRow[]) => {
-          const formatted = data
-            .map((row) => ({
-              name: row.month,
-              value: Number(row.total),
-            }))
-            .sort(
-              (a, b) => new Date(a.name).getTime() - new Date(b.name).getTime(),
-            );
-          setMonthlyData(formatted);
-        })
-        .catch((error) => console.log("Monthly API Error:", error));
-
       fetch(`http://localhost:${BACKEND_PORT}/users/category/${userId}`, {
         method: "GET",
       })
@@ -148,7 +97,6 @@ export default function Home() {
     name: category.category_name,
     id: category.id,
   }));
-
   console.log(categories);
   return (
     <>
@@ -161,9 +109,8 @@ export default function Home() {
                 Total Spending
               </Text>
               {/* <View style={styles.graph}></View> */}
-              {/* <CustomPieChart data={pieData} size={250} total={total} /> */}
-              <BarChart data={monthlyData} size={250} total={total} />
-              {/* <View style={styles.legendContainer}>
+              <CustomPieChart data={pieData} size={250} total={total} />
+              <View style={styles.legendContainer}>
                 {pieData.map((category) => {
                   return (
                     <View key={category.id} style={styles.legendItem}>
@@ -177,7 +124,7 @@ export default function Home() {
                     </View>
                   );
                 })}
-              </View> */}
+              </View>
             </View>
             {/* 
               components for the new transaction button and the list of transaction history.
